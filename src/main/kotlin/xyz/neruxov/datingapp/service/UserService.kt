@@ -4,9 +4,12 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import xyz.neruxov.datingapp.dao.UserEntity
+import xyz.neruxov.datingapp.dao.UserReactionEntity
 import xyz.neruxov.datingapp.dto.model.User
+import xyz.neruxov.datingapp.dto.request.UserReactRequest
 import xyz.neruxov.datingapp.dto.request.UserRegisterRequest
 import xyz.neruxov.datingapp.dto.response.UserRegisterResponse
+import xyz.neruxov.datingapp.exception.type.StatusCodeException
 import xyz.neruxov.datingapp.exception.type.UnauthorizedException
 import xyz.neruxov.datingapp.repository.UserRepository
 import java.security.MessageDigest
@@ -21,9 +24,11 @@ class UserService(
 ) {
 
     fun getAll(pageable: Pageable, token: String): PageImpl<User> {
-        getAuthorizationUserEntity(token)
+        val user = getAuthorizationUserEntity(token)
 
-        return PageImpl(userRepository.findAll(pageable).map { it.toModel() })
+        val users = userRepository.findAllByGender(pageable, user.gender.opposite())
+
+        return PageImpl(users.map { it.toModel() })
     }
 
     fun register(body: UserRegisterRequest): UserRegisterResponse {
@@ -54,6 +59,22 @@ class UserService(
         val savedUser = userRepository.save(userEntity)
 
         return savedUser.toModel()
+    }
+
+    fun react(userId: Long, request: UserReactRequest, token: String) {
+        val authorizedUserEntity = getAuthorizationUserEntity(token)
+        if (authorizedUserEntity.id == userId) throw StatusCodeException(400, "You can't react to yourself")
+
+        val targetUser = userRepository.findById(userId)
+            .getOrElse { throw StatusCodeException(404, "User not found") }
+
+        targetUser.reactions += UserReactionEntity(
+            userId = targetUser.id,
+            targetId = authorizedUserEntity.id,
+            reaction = request.reaction
+        )
+
+        userRepository.save(targetUser)
     }
 
     private fun generateToken() = (1..32).map { (('a'..'z') + ('A'..'Z') + ('0'..'9')).random() }.joinToString("")

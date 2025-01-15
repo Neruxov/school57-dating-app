@@ -23,7 +23,13 @@ data class User(
     )
 
     enum class Gender {
-        MALE, FEMALE
+        MALE, FEMALE;
+
+        fun opposite() = when (this) {
+            MALE -> FEMALE
+            FEMALE -> MALE
+        }
+
     }
 
 }

@@ -3,6 +3,7 @@ package xyz.neruxov.datingapp.controller
 import org.springframework.data.domain.Pageable
 import org.springframework.data.web.PageableDefault
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import xyz.neruxov.datingapp.dto.model.User
+import xyz.neruxov.datingapp.dto.request.UserReactRequest
 import xyz.neruxov.datingapp.dto.request.UserRegisterRequest
 import xyz.neruxov.datingapp.service.UserService
 
@@ -30,5 +32,8 @@ class UserController(
 
     @PutMapping
     fun update(@RequestBody body: User, @RequestHeader("Authorization") token: String) = userService.update(body, token)
+
+    @PostMapping("/{id}/reaction")
+    fun react(@PathVariable id: Long, @RequestBody body: UserReactRequest, @RequestHeader("Authorization") token: String) = userService.react(id, body, token)
 
 }

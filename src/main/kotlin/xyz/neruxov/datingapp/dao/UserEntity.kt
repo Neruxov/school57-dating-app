@@ -27,7 +27,10 @@ data class UserEntity(
 
     val passwordHash: String = "",
 
-    val token: String = ""
+    val token: String = "",
+
+    @OneToMany(mappedBy = "userId", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val reactions: MutableSet<UserReactionEntity> = mutableSetOf()
 
 ) {
 
@@ -38,7 +41,7 @@ data class UserEntity(
         age = age,
         firstName = firstName,
         lastName = lastName,
-        photo = photo
+        photo = photo,
     )
 
 }
